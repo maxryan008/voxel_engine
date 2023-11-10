@@ -27,6 +27,8 @@ use bevy::utils::label::DynEq;
 use noise::{NoiseFn, Perlin, Seedable, Fbm, MultiFractal};
 use crate::database::sector::*;
 
+
+
 #[derive(Default, Debug, Clone)]
 pub struct Chunk
 {
@@ -65,7 +67,8 @@ pub struct UpdateChunk(Task<RenderData>);
 pub struct SpawnChunk(Task<RenderData>);
 
 
-pub fn chunk_to_render(
+pub fn chunk_to_render
+(
     chunk: Chunk,
     loaded_chunks: CurrentlyLoaded,
 ) -> RenderData
@@ -406,8 +409,8 @@ pub fn render_update
     return render_data;
 }
 
-
-pub fn generate_chunk(chunk_position: [i32; 3]) -> Vec<Voxel> {
+pub fn generate_chunk(chunk_position: [i32; 3]) -> Vec<Voxel>
+{
     let sp1 = Key::new(-1.0, 50.0, Interpolation::Linear);
     let sp2 = Key::new(0.3, 100.0, Interpolation::default());
     let sp3 = Key::new(0.4, 150.0, Interpolation::default());
@@ -507,7 +510,15 @@ pub fn generate_chunk(chunk_position: [i32; 3]) -> Vec<Voxel> {
                     }
 
                 }
-
+                if voxel.voxel_type == VoxelType::Air
+                {
+                    if rng.gen_range(0..1000) < 1
+                    {
+                        voxel.voxel_type = VoxelType::Glass;
+                        voxel.solid = false;
+                        voxel.voxel_variant = VoxelVariant::Block;
+                    }
+                }
                 data.push(voxel);
             }
         }
@@ -517,7 +528,8 @@ pub fn generate_chunk(chunk_position: [i32; 3]) -> Vec<Voxel> {
 }
 
 
-pub fn chunk_handler(
+pub fn chunk_handler
+(
     mut commands: Commands,
     mut compute_chunks: Query<(Entity, &mut ComputeChunk)>,
     mut update_chunks: Query<(Entity, &mut UpdateChunk)>,
@@ -694,7 +706,9 @@ pub fn chunk_handler(
                 material: materials.add(StandardMaterial{
                     emissive: Color::WHITE,
                     emissive_texture: Option::from(texture_atlas_data.clone().tex),
-                    double_sided: true,
+                    double_sided: false,
+                    alpha_mode: AlphaMode::Opaque,
+
                     ..default()
                 }),
                 transform: Transform::from_xyz(0.0, 0.0, 0.0),
